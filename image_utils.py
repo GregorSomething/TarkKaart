@@ -10,7 +10,7 @@ def get_image_processor(max_x: int, max_y: int, set_data: CardSetData) -> Callab
     :arg max_y Maksimaalne kõrgus
     :arg set_data Set kuhu pilt kuulub"""
 
-    def img_proc(path_from: str, card: CardData) -> tuple[bool, str]:
+    def img_proc(path_from: str, img_id: str) -> tuple[bool, str]:
         img = cv2.imread(path_from)  # Loeb pildi
         cy, cx, _ = img.shape  # Võtab hetke suuruse suuruse
         if cx > cy:
@@ -20,7 +20,7 @@ def get_image_processor(max_x: int, max_y: int, set_data: CardSetData) -> Callab
         else:
             img = cv2.resize(img, None, fx=(max_y / cy), fy=(max_y / cy))
         # Salvestab pildi asukohta nimega
-        cv2.imwrite(f"{set_data.data_folder}img/{card.card_id}.jpg", img)
+        cv2.imwrite(f"{set_data.data_folder}img/{img_id}.ppm", img) # GUI vajab .ppm formaati
         return True, "Ok"
 
     return img_proc

@@ -1,4 +1,5 @@
 from enum import Enum
+import os
 
 
 class CardData:  # TODO: Kõik vajalikud väljad
@@ -81,9 +82,31 @@ class CardSetData:  # TODO: Kõik vajalikud väljad
         :arg data_folder andmekaust, kust andmed pärinevad"""
         len_cards = int(string[:4])
         cards: list[CardData] = []
-        j = 4 # Viimane koht stringis mida vaadeldi
+        j = 4  # Viimane koht stringis mida vaadeldi
         for i in range(len_cards):
             len_card = int(string[j:j + 4])
             cards.append(CardData.from_data_string(string[j + 4:j + 4 + len_card]))
             j = j + 4 + len_card
         return CardSetData(data_folder, cards)
+
+
+class GenericError(Exception):
+    def __init__(self, message: str):
+        self.message: str = message
+
+
+def save(path: str, data: CardSetData) -> None:
+    cpath: str = os.path.join(path, "data.sav")
+    os.makedirs(os.path.join(path, "img"))
+    with open(cpath, "w", encoding="UTF-8") as file:
+        file.write(CardSetData.to_data_string(data))
+
+
+def load(path: str) -> CardSetData:
+    if not os.listdir(path):
+        raise GenericError("Andmekausta puudub.")
+    if not os.path.exists(os.path.join(path, "data.sav")):
+        raise GenericError("Andmefail puudub.")
+    cpath: str = os.path.join(path, "data.sav")
+    with open(cpath, "r", encoding="UTF-8") as file:
+        return CardSetData.from_data_string("\n".join(file.readlines()).strip(), path) # Read andis vist bin andmeid

@@ -110,3 +110,7 @@ def load(path: str) -> CardSetData:
     cpath: str = os.path.join(path, "data.sav")
     with open(cpath, "r", encoding="UTF-8") as file:
         return CardSetData.from_data_string("\n".join(file.readlines()).strip(), path) # Read andis vist bin andmeid
+
+
+def get_img_path(data: CardData.CardSide, set: CardSetData) -> str:
+    return os.path.join(set.data_folder, "img", f"{data.content}.ppm")

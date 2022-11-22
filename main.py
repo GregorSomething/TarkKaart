@@ -2,11 +2,12 @@ from PIL import Image, ImageTk
 from tkinter import Button, Checkbutton, Frame, Label
 from tkinter.messagebox import showerror
 from tkinterdnd2.TkinterDnD import Tk
+
+import data
 from utils import *
 
 
 class TarkKaart:
-    
     questions = []
 
     def add_question(self):
@@ -16,16 +17,22 @@ class TarkKaart:
         self.question_scrollframe.update()
         self.question_scrollframe.canvas.yview_moveto(1)
 
+    def add_questions(self, questions):
+        self.questions.extend(questions)
+        self.question_scrollframe.update()
+        self.question_scrollframe.canvas.yview_moveto(1)
 
     def start_slideshow(self):
         """Tee flash kaartide raam nähtavaks ja kontrolli kas on küsimusi"""
         self.question_index = 0
+        # Salvesta küsimused
+        data.save(self.storage, self.questions)
+        # ----
         self.slideshow_frame.tkraise()
         if len(self.questions) > 0:
             self.update_slideshow()
             self.toggle_checkbox()
             self.question_button.configure(text=self.questions[0].question_entry.get())
-
 
     def update_slideshow(self):
         """Uuenda ekraani järgmise küsimuse informatsiooniga, kui järgmine küsimus eksisteerib"""
@@ -36,7 +43,6 @@ class TarkKaart:
         else:
             self.answer_label.configure(text='')
             self.image_label.image = None
-    
 
     def draw_image(self):
         """Ava pilt ja salvesta"""
@@ -44,13 +50,14 @@ class TarkKaart:
         if filename != '':
             try:
                 open_image = Image.open(filename)
-                open_image = open_image.resize((self.answer_label.winfo_width()-5, self.answer_label.winfo_height()-5))
+                open_image = open_image.resize(
+                    (self.answer_label.winfo_width() - 5, self.answer_label.winfo_height() - 5))
                 image_file = ImageTk.PhotoImage(open_image)
                 self.image_label.image = image_file
                 self.image_label.configure(image=image_file, height=open_image.height, width=open_image.width)
             except FileNotFoundError:
-                showerror('Invalid File Path', 'The file path for this image is invalid. Please choose a valid file path.')
-
+                showerror('Invalid File Path',
+                          'The file path for this image is invalid. Please choose a valid file path.')
 
     def reveal_answer(self):
         """Näita flash kaardi vastust"""
@@ -62,7 +69,6 @@ class TarkKaart:
                 self.questions[self.question_index].is_revealed = True
                 self.answer_label.configure(text=self.questions[self.question_index].answer_entry.get())
                 self.draw_image()
-    
 
     def previous_question(self):
         """Eelmine küsimus"""
@@ -71,20 +77,17 @@ class TarkKaart:
             self.update_slideshow()
             self.toggle_checkbox()
 
-
     def next_question(self):
         """Järgmine küsimus"""
-        if self.question_index+1 < len(self.questions):
+        if self.question_index + 1 < len(self.questions):
             self.question_index += 1
             self.update_slideshow()
             self.toggle_checkbox()
-    
-    
+
     def mark_question(self):
         """Kas vastasid õieti või valesti checkbox"""
         if len(self.questions) > 0:
             self.questions[self.question_index].is_correct = not self.questions[self.question_index].is_correct
-
 
     def toggle_checkbox(self):
         """Jäta meelde kas vastati õieti või valesti"""
@@ -92,7 +95,6 @@ class TarkKaart:
             self.checkbox.select()
         else:
             self.checkbox.deselect()
-    
 
     def run(self):
         """Widgetid ja main loop."""
@@ -107,7 +109,7 @@ class TarkKaart:
         self.button_frame = Frame(self.edit_frame, bg=FRAME_BG)
         self.question_frame = Frame(self.edit_frame, bg=FRAME_BG)
         self.slideshow_frame = Frame(self.container, bg=FRAME_BG)
-        self.left_frame = Frame(self.slideshow_frame, bg=FRAME_BG) 
+        self.left_frame = Frame(self.slideshow_frame, bg=FRAME_BG)
         self.mid_frame = Frame(self.slideshow_frame, bg=FRAME_BG)
         self.right_frame = Frame(self.slideshow_frame, bg=FRAME_BG)
         self.answer_frame = Frame(self.mid_frame, bg=FRAME_BG)
@@ -119,20 +121,33 @@ class TarkKaart:
         self.image_label = Label(self.answer_frame, bg=FRAME_BG)
 
         # Buttons
-        self.title_slideshow_button = Button(self.home_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, bd=2, relief='solid', font=LARGE_FONT, text='Alusta', command=self.start_slideshow, width=15)
-        self.edit_button = Button(self.home_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, bd=2, relief='solid', font=LARGE_FONT, text='Sisesta andmed', command=self.edit_frame.tkraise, width=15)
-        self.settings_button = Button(self.home_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, bd=2, relief='solid', font=LARGE_FONT, text='Sätted', width=15)
-        self.home_button_1 = Button(self.edit_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, font=SMALL_FONT, text='<< Tagasi', command=self.home_frame.tkraise)
-        self.home_button_2 = Button(self.slideshow_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, font=SMALL_FONT, text='<< Tagasi', command=self.home_frame.tkraise)
-        self.edit_add_button = Button(self.button_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, font=SMALL_FONT, text='+ Lisa küsimus', command=self.add_question)
-        self.edit_slideshow_button = Button(self.button_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, font=SMALL_FONT, text='Alusta', command=self.start_slideshow)
-        self.question_button = Button(self.mid_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, font=LARGE_FONT, wraplength=1500, command=self.reveal_answer)
-        self.previous_button = Button(self.left_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, font=SMALL_FONT, text='<< Eelmine', command=self.previous_question)
-        self.next_button = Button(self.right_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, font=SMALL_FONT, text='Järgmine >>', command=self.next_question)
+        self.title_slideshow_button = Button(self.home_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                             bd=2, relief='solid', font=LARGE_FONT, text='Alusta',
+                                             command=self.start_slideshow, width=15)
+        self.edit_button = Button(self.home_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, bd=2,
+                                  relief='solid', font=LARGE_FONT, text='Sisesta andmed',
+                                  command=self.edit_frame.tkraise, width=15)
+        self.settings_button = Button(self.home_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG, bd=2,
+                                      relief='solid', font=LARGE_FONT, text='Sätted', width=15)
+        self.home_button_1 = Button(self.edit_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                    font=SMALL_FONT, text='<< Tagasi', command=self.home_frame.tkraise)
+        self.home_button_2 = Button(self.slideshow_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                    font=SMALL_FONT, text='<< Tagasi', command=self.home_frame.tkraise)
+        self.edit_add_button = Button(self.button_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                      font=SMALL_FONT, text='+ Lisa küsimus', command=self.add_question)
+        self.edit_slideshow_button = Button(self.button_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                            font=SMALL_FONT, text='Alusta', command=self.start_slideshow)
+        self.question_button = Button(self.mid_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                      font=LARGE_FONT, wraplength=1500, command=self.reveal_answer)
+        self.previous_button = Button(self.left_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                      font=SMALL_FONT, text='<< Eelmine', command=self.previous_question)
+        self.next_button = Button(self.right_frame, activebackground=ACTIVE_BG, activeforeground=ACTIVE_FG,
+                                  font=SMALL_FONT, text='Järgmine >>', command=self.next_question)
 
         # Checkbutton
-        self.checkbox = Checkbutton(self.mid_frame, activebackground=FRAME_BG, bg=FRAME_BG, font=SMALL_FONT, text='Vastasid õieti?', command=self.mark_question)
-        
+        self.checkbox = Checkbutton(self.mid_frame, activebackground=FRAME_BG, bg=FRAME_BG, font=SMALL_FONT,
+                                    text='Vastasid õieti?', command=self.mark_question)
+
         # Widgetid ekraanile
         self.container.pack(expand=True, fill='both')
         self.home_frame.grid(row=0, column=0, sticky='nsew')
@@ -166,6 +181,10 @@ class TarkKaart:
         self.home_frame.grid_columnconfigure(0, weight=1)
         self.edit_frame.grid_columnconfigure(0, weight=1)
         self.slideshow_frame.grid_columnconfigure(0, weight=1)
+
+        # Andme asjad
+        self.storage = data.Storage()
+        self.add_questions(data.load(self.storage, self))
 
         # Põhiraam nähtavale ja mainloop
         self.home_frame.tkraise()

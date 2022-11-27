@@ -28,6 +28,8 @@ class TarkKaart:
         # Salvesta küsimused
         data.save(self.storage, self.questions)
         # ----
+        self.pomodoro.reset()
+        self.pomodoro.start()
         self.slideshow_frame.tkraise()
         if len(self.questions) > 0:
             self.update_slideshow()
@@ -72,6 +74,7 @@ class TarkKaart:
 
     def previous_question(self):
         """Eelmine küsimus"""
+        self.pomodoro.check()
         if self.question_index > 0:
             self.question_index -= 1
             self.update_slideshow()
@@ -79,6 +82,7 @@ class TarkKaart:
 
     def next_question(self):
         """Järgmine küsimus"""
+        self.pomodoro.check()
         if self.question_index + 1 < len(self.questions):
             self.question_index += 1
             self.update_slideshow()
@@ -185,6 +189,9 @@ class TarkKaart:
         # Andme asjad
         self.storage = data.Storage()
         self.add_questions(data.load(self.storage, self))
+
+        # Pomodoro, arg1 on aeg mille tagant sõnum tuleb
+        self.pomodoro = data.Pomodoro(20)
 
         # Põhiraam nähtavale ja mainloop
         self.home_frame.tkraise()

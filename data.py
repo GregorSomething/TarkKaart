@@ -1,5 +1,8 @@
 import os.path
 import pickle as p
+import sys
+import time
+import tkinter
 
 import utils
 
@@ -58,3 +61,27 @@ class iQuestion:
             self.answer = answer
         if image is not None:
             self.image = image
+
+
+class Pomodoro:
+
+    def __init__(self, delay: int):
+        self.start_time = int(time.time() // 1)
+        self.end_time = self.start_time + delay * 60
+        self.delay = delay
+
+    def reset(self):
+        self.start_time = int(time.time() // 1)
+        self.end_time = sys.maxsize
+
+    def start(self):
+        self.reset()
+        self.end_time = self.start_time + self.delay * 60
+
+    def check(self):
+        print("aa", self.start_time, self.end_time, time.time())
+        if self.end_time <= time.time():
+            tkinter.messagebox.showinfo(title="TarkKaart | Pomodoro",
+                                        message=f"Oled õppinud {self.delay} minutit, võta viie minutine paus, et õppida efektiivsemalt.")
+            self.reset()
+            self.start()

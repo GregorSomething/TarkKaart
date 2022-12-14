@@ -8,6 +8,7 @@ import utils
 
 
 def save(storage, question_list: list[utils.Question]):
+    storage.iQuestion_list = []
     for i, q in enumerate(question_list):
         sq = iQuestion()
         sq.set(is_correct=q.is_correct_arr,
@@ -20,10 +21,7 @@ def save(storage, question_list: list[utils.Question]):
         else:
             sq.is_correct = sq.is_correct[:-1]
             sq.is_correct.append(q.is_correct)
-        try:
-            storage.iQuestion_list[i] = sq
-        except IndexError:
-            storage.iQuestion_list.append(sq)
+        storage.iQuestion_list.append(sq)
     with open("save.dat", "wb") as f:
         p.dump(storage, f)
 

@@ -10,6 +10,9 @@ from utils import *
 class TarkKaart:
     questions = []
 
+    def __init__(self, datafile):
+        self.datafile = datafile
+
     def add_question(self):
         """Loo küsimus ja uuenda küsimuste listi"""
         question = Question(self)
@@ -193,7 +196,7 @@ class TarkKaart:
         self.slideshow_frame.grid_columnconfigure(0, weight=1)
 
         # Andme asjad
-        self.storage = data.Storage()
+        self.storage = data.Storage(self.datafile)
         self.add_questions(data.load(self.storage, self))
 
         # Pomodoro, arg1 on aeg mille tagant sõnum tuleb
@@ -205,5 +208,5 @@ class TarkKaart:
 
 
 if __name__ == '__main__':
-    app = TarkKaart()
+    app = TarkKaart(data.get_data_file_from_user())
     app.run()

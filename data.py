@@ -22,15 +22,15 @@ def save(storage, question_list: list[utils.Question]):
             sq.is_correct = sq.is_correct[:-1]
             sq.is_correct.append(q.is_correct)
         storage.iQuestion_list.append(sq)
-    with open("save.dat", "wb") as f:
+    with open(storage.datafile, "wb") as f:
         p.dump(storage, f)
 
 
 def load(storage, app) -> list[utils.Question]:
-    if not os.path.exists("save.dat"):
+    if not os.path.exists(storage.datafile):
         print("Andmefail puudu!")
         return []
-    with open("save.dat", "rb") as f:
+    with open(storage.datafile, "rb") as f:
         f_storage = p.load(f)
         storage.iQuestion_list = f_storage.iQuestion_list
         questions = []
@@ -55,9 +55,18 @@ def question_sort_value_provider(q):
     return summa / pikkus
 
 
+def get_data_file_from_user():
+    box = tkinter.messagebox.askquestion("TarkKaart | Start", "Ava eksisteeriv andmefail?")
+    if box == "no":
+        return "./save.dat"
+    return tkinter.filedialog.askopenfilename(title="Ava andmefail", initialdir="./",
+                                              filetypes=[("Andmefail", "*.dat")])
+
+
 class Storage:
-    def __init__(self):
+    def __init__(self, datafile):
         self.iQuestion_list: list = []
+        self.datafile = datafile
 
 
 class iQuestion:

@@ -10,10 +10,16 @@ import utils
 def save(storage, question_list: list[utils.Question]):
     for i, q in enumerate(question_list):
         sq = iQuestion()
-        sq.set(is_correct=q.is_correct,
+        sq.set(is_correct=q.is_correct_arr,
                question=q.question_entry.get(),
                answer=q.answer_entry.get(),
                image=q.image_entry.get())
+        if not q.updated_in_session:
+            sq.is_correct.append(q.is_correct)
+            q.updated_in_session = True
+        else:
+            sq.is_correct = sq.is_correct[:-1]
+            sq.is_correct.append(q.is_correct)
         try:
             storage.iQuestion_list[i] = sq
         except IndexError:
@@ -30,14 +36,25 @@ def load(storage, app) -> list[utils.Question]:
         f_storage = p.load(f)
         storage.iQuestion_list = f_storage.iQuestion_list
         questions = []
-        for q in f_storage.iQuestion_list:
+        storage.iQuestion_list = sorted(storage.iQuestion_list, key=question_sort_value_provider)
+        for q in storage.iQuestion_list:
             fq = utils.Question(app)
-            fq.is_correct = q.is_correct
+            fq.is_correct = False
+            fq.is_correct_arr = q.is_correct
             fq.question_entry.insert(0, q.question)
             fq.answer_entry.insert(0, q.answer)
             fq.image_entry.insert(0, q.image)
             questions.append(fq)
         return questions
+
+
+def question_sort_value_provider(q):
+    """q - iQuestion"""
+    summa = sum(map(lambda bl: 1 if bl else 0, q.is_correct))
+    pikkus = len(q.is_correct)
+    if pikkus == 0:
+        return 0
+    return summa / pikkus
 
 
 class Storage:
@@ -47,7 +64,7 @@ class Storage:
 
 class iQuestion:
     def __init__(self):
-        self.is_correct = False
+        self.is_correct: list[bool] = []
         self.question = ""
         self.answer = ""
         self.image = ""
@@ -79,7 +96,6 @@ class Pomodoro:
         self.end_time = self.start_time + self.delay * 60
 
     def check(self):
-        print("aa", self.start_time, self.end_time, time.time())
         if self.end_time <= time.time():
             tkinter.messagebox.showinfo(title="TarkKaart | Pomodoro",
                                         message=f"Oled õppinud {self.delay} minutit, võta viie minutine paus, et õppida efektiivsemalt.")

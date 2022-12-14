@@ -79,6 +79,9 @@ class TarkKaart:
             self.question_index -= 1
             self.update_slideshow()
             self.toggle_checkbox()
+        # Salvesta küsimused
+        data.save(self.storage, self.questions)
+        # ----
 
     def next_question(self):
         """Järgmine küsimus"""
@@ -87,6 +90,9 @@ class TarkKaart:
             self.question_index += 1
             self.update_slideshow()
             self.toggle_checkbox()
+        # Salvesta küsimused
+        data.save(self.storage, self.questions)
+        # ----
 
     def mark_question(self):
         """Kas vastasid õieti või valesti checkbox"""

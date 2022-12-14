@@ -32,6 +32,8 @@ class Question:
         """
         # Jätame meelde kas küsimusele vastata õieti
         self.is_correct = False
+        self.is_correct_arr = []
+        self.updated_in_session = False
         self.is_revealed = False
 
         # Defineerime parent scrollframe'i ja raami borderi
